@@ -12,6 +12,10 @@ Physical Sciences Informatics (PSI) is NASA's repository for physical-sciences i
 
 The planned solid-fuel candidates are BASS, BASS-II, and SAFFIRE-I, SAFFIRE-II, and SAFFIRE-III. Confirm exact investigation IDs, available files, test-level outcome labels, and gravity conditions in PSI before adding records. Do not assume every listed investigation contains comparable fields or machine-readable experimental tables.
 
+## Files currently copied into the repository
+
+The raw folders currently contain one experimental-table CSV and one original PSI metadata ZIP for each of PSI-26 (BASS), PSI-25 (BASS-II), PSI-98 (SAFFIRE-I), PSI-99 (SAFFIRE-II), and PSI-100 (SAFFIRE-III). The files were copied unchanged from the local Downloads folder. Their hashes and paths are recorded in `data/metadata/dataset_inventory.csv`; the source pages are recorded in `source_registry.csv`. They are marked `copied_unreviewed` and have not been harmonised into test-point rows.
+
 ## Local organization
 
 Store downloaded source material under `data/raw/nasa_psi/<INVESTIGATION>/` in the matching subfolder:

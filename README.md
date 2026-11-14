@@ -4,7 +4,7 @@ FlameBound is a research project for organizing and analysing NASA solid-fuel co
 
 ## Project status
 
-The repository currently contains the mathematical framework, atmospheric calculation functions, a proposed data schema, and their initial tests. NASA experiment records, coverage analysis, statistical models, the API, the frontend, and AI retrieval are not implemented yet.
+The repository contains the mathematical framework, atmospheric calculation functions, a proposed data schema, and raw experimental tables plus PSI metadata archives for BASS, BASS-II, and SAFFIRE-I/II/III. Those sources have not yet been audited or harmonised. Coverage analysis, statistical models, the API, the frontend, and AI retrieval are still scaffolds or future work.
 
 ## Setup
 

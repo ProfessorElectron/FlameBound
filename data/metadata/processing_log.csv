@@ -1,0 +1,1 @@
+process_id,source_path,output_path,script,script_version,timestamp_utc,input_checksum_sha256,output_checksum_sha256,action,records_in,records_out,warnings

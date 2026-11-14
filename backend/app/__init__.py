@@ -1,0 +1,1 @@
+"""FlameBound backend application."""

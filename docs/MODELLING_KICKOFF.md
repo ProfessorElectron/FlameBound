@@ -76,4 +76,4 @@ Please send the challenge's official resource links, the first investigation fil
 - Will the data teammate provide one row per test point with source citations and units?
 - Does the team accept a coverage-only result if the outcome data are too sparse?
 
-The repository currently contains only its README, so there is no existing data schema or modelling implementation to preserve. This kickoff is a proposal for team review; the numerical model should follow verified data rather than assumptions in the blueprint.
+The repository now contains the proposed data schema, raw PSI source files, and a first audit layer. The harmonised test-point table remains empty until row identities, units, outcomes, and source crosswalks are verified. See `data_audit_report.md`, `harmonisation_plan.md`, and `evidence_assessment.md`; no predictive model should be fit before those checks are complete.

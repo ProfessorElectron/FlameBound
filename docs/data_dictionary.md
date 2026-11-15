@@ -40,7 +40,7 @@ Use `data/template/test_points_template.csv` as the header template. Leave numer
 | `sample_length_mm` | number, mm | Measured length; convert to mm and retain original in notes if needed. |
 | `sample_width_mm` | number, mm | Measured width. |
 | `sample_thickness_mm` | number, mm | Measured thickness. |
-| `oxygen_mole_fraction` | number, fraction | Mole fraction on `[0,1]`; convert a reported percentage by dividing by 100. |
+| `oxygen_mole_fraction` | number, fraction | Mole fraction on `[0,1]`; convert a reported percent only when its numeric scale and gas basis are explicitly verified. Volume fraction is not automatically a mole fraction; if using ideal-gas equivalence, record that assumption and its evidence. |
 | `oxygen_fraction_raw` | string | Original value and representation, e.g. `30 vol%`; retain source basis if stated. |
 | `total_pressure_kpa` | number, kPa absolute | Normalized absolute total pressure. Do not use gauge pressure without conversion and documentation. |
 | `total_pressure_raw` | string | Original pressure value and unit. |
@@ -79,7 +79,7 @@ Use `data/template/test_points_template.csv` as the header template. Leave numer
 
 - Preserve the source wording in every `*_raw` field. Normalization must not overwrite raw evidence.
 - Store mole fractions from 0 to 1; store pressures as absolute kPa; store speed as m/s; store dimensions as mm; store temperature as K.
-- Only convert units when the source unit is clear. Record unusual conversions in `row_notes` or `derived_value_notes`.
+- Only convert units when the source unit and physical basis are clear. Convert oxygen percentage to mole fraction only when the percentage scale is unambiguous and the gas-basis equivalence is verified; record the source, assumption, and conversion in provenance/`derived_value_notes`. Do not infer the scale from plausible-looking values.
 - `unknown` means the source does not establish a value or label. `ambiguous` means evidence exists but does not map cleanly to a category. Neither means extinction.
 - Keep flow direction/configuration and investigation identity in any coverage/model row. A numerical match across different apparatuses does not prove physical comparability.
 - `derived_oxygen_partial_pressure_kpa` is exactly dependent on oxygen fraction and total pressure. Do not treat all three as independent predictors without a specific statistical reason.

@@ -7,3 +7,4 @@ node_modules/
 dist/
 .env
 .DS_Store
+data/raw/nasa_psi/BASS/experimental_tables/BASS\ Test\ Matrix\ 050213.xlsx

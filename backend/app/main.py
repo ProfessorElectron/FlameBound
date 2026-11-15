@@ -7,10 +7,12 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from backend.app.api.atmosphere import router as atmosphere_router
+from backend.app.api.assistant import router as assistant_router
 from backend.app.version import API_SCHEMA_VERSION
 
 app = FastAPI(title="FlameBound API", version=API_SCHEMA_VERSION)
 app.include_router(atmosphere_router)
+app.include_router(assistant_router)
 
 
 def _error(code: str, field: str | None, message: str) -> dict[str, object]:

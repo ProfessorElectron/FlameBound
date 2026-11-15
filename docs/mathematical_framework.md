@@ -165,6 +165,8 @@ The direct atmospheric calculations—pressure-unit conversion, oxygen partial p
 
 ## References
 
+- International Union of Pure and Applied Chemistry (IUPAC), [“pressure”](https://goldbook.iupac.org/terms/view/P04819), *Compendium of Chemical Terminology*, 5th ed. (2025), DOI: [10.1351/goldbook.P04819](https://doi.org/10.1351/goldbook.P04819). Defines the gas-mixture partial pressure relation `p_i = x_i p`.
+- International Union of Pure and Applied Chemistry (IUPAC), [“amount fraction”](https://goldbook.iupac.org/terms/view/A00296) and [“mass fraction”](https://goldbook.iupac.org/terms/view/M03722), *Compendium of Chemical Terminology*, 5th ed. (2025). These definitions support the stated binary-mixture conversion; they do not validate any NASA test-row input.
 - NASA, [Burning and Suppression of Solids (BASS)](https://www.nasa.gov/wp-content/uploads/2025/07/burning-and-suppression-of-solids-bass.pdf).
 - NASA, [Physical Sciences Informatics investigation catalogue](https://www.nasa.gov/physical-sciences-informatics-psi/psi-investigations-by-research-area/).
 - de Ris, J. N. (1969), [“Spread of a laminar diffusion flame”](https://doi.org/10.1016/S0082-0784(69)80407-8), *Proceedings of the Combustion Institute*, 12, 241–252.

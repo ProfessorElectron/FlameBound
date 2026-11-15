@@ -1,0 +1,71 @@
+{
+  "dataset_version": "1.0",
+  "purpose": "Human-labeled retrieval calibration; expected source IDs are sourced from the repository inventory.",
+  "cases": [
+    {
+      "id": "relevant_bass_table",
+      "query": "What experiment identifiers are listed in the PSI-26 BASS experimental table?",
+      "label": "relevant",
+      "expected_source_ids": [
+        "PSI-26-experimental_table"
+      ],
+      "expected_page_matches": null
+    },
+    {
+      "id": "relevant_saffire2_table",
+      "query": "Which data table corresponds to the SAFFIRE-II investigation?",
+      "label": "relevant",
+      "expected_source_ids": [
+        "PSI-99-experimental_table"
+      ],
+      "expected_page_matches": null
+    },
+    {
+      "id": "partial_bass_procedure",
+      "query": "What preparation or operating procedure is documented for BASS-II?",
+      "label": "partially_relevant",
+      "expected_source_ids": [
+        "PSI-25-engineering_document-BASS-II Procedure"
+      ],
+      "expected_page_matches": null
+    },
+    {
+      "id": "partial_saffire_ops",
+      "query": "What operational documentation exists for SAFFIRE-I?",
+      "label": "partially_relevant",
+      "expected_source_ids": [
+        "PSI-98-engineering_documents-SAFFIRE-I Operations"
+      ],
+      "expected_page_matches": null
+    },
+    {
+      "id": "unrelated_mars",
+      "query": "How does the Mars rover transmit images to Earth?",
+      "label": "unrelated",
+      "expected_source_ids": [],
+      "expected_page_matches": null
+    },
+    {
+      "id": "unrelated_microscopy",
+      "query": "Which fluorescent dye is best for confocal microscopy?",
+      "label": "unrelated",
+      "expected_source_ids": [],
+      "expected_page_matches": null
+    },
+    {
+      "id": "absent_flame_speed",
+      "query": "What peak flame spread velocity was measured for a named material in a specific PSI-26 run?",
+      "label": "absent",
+      "expected_source_ids": [],
+      "expected_page_matches": null
+    },
+    {
+      "id": "absent_astronaut_quote",
+      "query": "Which astronaut reported a spontaneous fire in a habitat during these experiments?",
+      "label": "absent",
+      "expected_source_ids": [],
+      "expected_page_matches": null
+    }
+  ],
+  "label_status": "provisional source-level labels; page matches pending document review"
+}

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./App.css";
+import { askAssistant, runScenario } from "./api";
 
 // -------------------- DEMO FIXTURES --------------------
 // Illustrative UI fixtures matching app.py
@@ -66,8 +67,8 @@ function Header({ title, subtitle, scenario }) {
         <div className="alert alert-info">
           <span>🧪</span>
           <span>
-            Active scenario · O₂ fraction {scenario.oxygen.toFixed(2)} · Pressure{" "}
-            {scenario.pressure.toFixed(1)} kPa
+            Active scenario · O₂ fraction {scenario.oxygen} · Pressure{" "}
+            {scenario.pressure} kPa absolute
           </span>
         </div>
       )}
@@ -266,6 +267,9 @@ export default function App() {
   // Form inputs for Scenario Analysis
   const [oxygenInput, setOxygenInput] = useState(0.21);
   const [pressureInput, setPressureInput] = useState(101.3);
+  const [scenarioCalculation, setScenarioCalculation] = useState(null);
+  const [scenarioLoading, setScenarioLoading] = useState(false);
+  const [scenarioError, setScenarioError] = useState("");
 
   // Evidence Explorer Filters
   const [fuelFilter, setFuelFilter] = useState("All");
@@ -278,6 +282,8 @@ export default function App() {
   // AI Assistant State
   const [chatHistory, setChatHistory] = useState([]);
   const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState("");
 
   // Methodology Tabs State
   const [activeTab, setActiveTab] = useState("Pipeline");
@@ -295,26 +301,53 @@ export default function App() {
     DEMO_RECORDS.find((r) => r["Record ID"] === selectedRecordId) ||
     DEMO_RECORDS[0];
 
-  const handleCalculateScenario = (e) => {
+  const handleCalculateScenario = async (e) => {
     e.preventDefault();
-    setScenario({
-      active: true,
-      oxygen: Number(oxygenInput),
-      pressure: Number(pressureInput),
-    });
+    setScenarioLoading(true);
+    setScenarioError("");
+    try {
+      const result = await runScenario({
+        oxygen_mole_fraction: Number(oxygenInput),
+        total_pressure: Number(pressureInput),
+        pressure_unit: "kPa",
+        pressure_basis: "absolute",
+      });
+      setScenario({ active: true, oxygen: Number(oxygenInput), pressure: Number(pressureInput) });
+      setScenarioCalculation(result);
+    } catch (error) {
+      setScenarioError(error.message);
+    } finally {
+      setScenarioLoading(false);
+    }
   };
 
-  const handleChatSubmit = (e) => {
+  const handleChatSubmit = async (e) => {
     e.preventDefault();
-    if (!chatInput.trim()) return;
-    const answer =
-      "The assistant service is not connected yet. Once integrated, it should retrieve relevant source passages, cite each claim and distinguish measured evidence from interpretation. No scientific answer has been generated.";
-    setChatHistory((prev) => [
-      ...prev,
-      { who: "user", msg: chatInput.trim() },
-      { who: "assistant", msg: answer },
-    ]);
+    const question = chatInput.trim();
+    if (!question || chatLoading) return;
+    const priorHistory = chatHistory.map((item) => ({
+      role: item.who,
+      content: item.msg,
+    })).slice(-8);
+    setChatHistory((prev) => [...prev, { who: "user", msg: question }]);
     setChatInput("");
+    setChatLoading(true);
+    setChatError("");
+    try {
+      const response = await askAssistant(question, priorHistory);
+      setChatHistory((prev) => [...prev, {
+        who: "assistant",
+        msg: response.explanation,
+        status: response.status,
+        bases: response.bases,
+        citations: response.citations,
+        calculation: response.calculation,
+      }]);
+    } catch (error) {
+      setChatError(error.message);
+    } finally {
+      setChatLoading(false);
+    }
   };
 
   return (
@@ -377,10 +410,10 @@ export default function App() {
 
         <hr className="divider" />
         <span className="sidebar-section-label">SYSTEM STATUS</span>
-        <div className="caption">● UI prototype running</div>
+        <div className="caption">● UI running</div>
         <div className="caption">○ NASA data connection — not connected</div>
-        <div className="caption">○ Scientific engine — demo only</div>
-        <div className="caption">○ AI / RAG — not connected</div>
+        <div className="caption">Atmospheric engine: backend API (requires local backend)</div>
+        <div className="caption">Assistant API: backend endpoint · project evidence retrieval unavailable</div>
         <div className="caption">Data version: DEMO-0.1</div>
       </aside>
 
@@ -432,7 +465,7 @@ export default function App() {
               <Metric
                 label="Gravity classes"
                 value="2"
-                note="1 g and microgravity"
+                note="1 g and microgravity in demo fixtures"
               />
             </div>
 
@@ -699,32 +732,34 @@ export default function App() {
                   />
                 </div>
                 <div className="field-group">
-                  <label className="field-label">Total pressure (kPa)</label>
+                  <label className="field-label">Total pressure (kPa absolute)</label>
                   <input
                     type="number"
                     className="number-input"
                     min="0.1"
                     max="2000"
-                    step="1.0"
+                    step="0.001"
                     value={pressureInput}
                     onChange={(e) => setPressureInput(e.target.value)}
                     required
                   />
                 </div>
               </div>
-              <button type="submit" className="btn-primary">
-                Calculate scenario
+              <button type="submit" className="btn-primary" disabled={scenarioLoading}>
+                {scenarioLoading ? "Calculating…" : "Calculate scenario"}
               </button>
             </form>
 
-            {scenario.active ? (
+            {scenarioError && <div className="alert alert-error" role="alert">{scenarioError}</div>}
+            {scenario.active && scenarioCalculation ? (
               <div>
                 <h3 className="section-title">Calculation result</h3>
                 <Metric
                   label="Oxygen partial pressure"
-                  value={`${(scenario.oxygen * scenario.pressure).toFixed(2)} kPa`}
-                  note={`${scenario.oxygen.toFixed(2)} × ${scenario.pressure.toFixed(2)} kPa`}
+                  value={`${scenarioCalculation.outputs.oxygen_partial_pressure_kpa} kPa`}
+                  note={`${scenario.oxygen} × ${scenario.pressure} kPa absolute`}
                 />
+                <pre className="calculation-envelope">{JSON.stringify(scenarioCalculation, null, 2)}</pre>
                 <div className="latex-block">p(O₂) = X(O₂) × P</div>
 
                 <h3 className="section-title">Evidence comparison</h3>
@@ -755,8 +790,7 @@ export default function App() {
               scenario={scenario}
             />
             <div className="alert alert-warning">
-              AI / RAG is not connected in this UI prototype. This panel does
-              not generate scientific answers.
+              Atmospheric calculations run deterministically on the backend. Project evidence retrieval is currently unavailable; no project citations will be supplied.
             </div>
 
             <div className="chat-history">
@@ -767,10 +801,15 @@ export default function App() {
                   </div>
                   <div style={{ lineHeight: 1.5, fontSize: "0.92rem" }}>
                     {item.msg}
+                    {item.status && <div className="caption">Status: {item.status}{item.bases?.length ? ` · Basis: ${item.bases.join(", ")}` : ""}</div>}
+                    {item.calculation && <details><summary>Calculation details</summary><pre className="calculation-envelope">{JSON.stringify(item.calculation, null, 2)}</pre></details>}
+                    {item.citations?.length > 0 && <ul>{item.citations.map((citation) => <li key={citation.citation_id}>{citation.title}, p. {citation.page} ({citation.review_status})</li>)}</ul>}
                   </div>
                 </div>
               ))}
             </div>
+            {chatLoading && <div className="caption" role="status">Assistant is responding…</div>}
+            {chatError && <div className="alert alert-error" role="alert">{chatError}</div>}
 
             <form onSubmit={handleChatSubmit} className="chat-form">
               <input
@@ -779,19 +818,20 @@ export default function App() {
                 placeholder="Example: What does oxygen partial pressure mean?"
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
+                disabled={chatLoading}
               />
               <button
                 type="submit"
                 className="btn-primary"
                 style={{ width: "auto" }}
+                disabled={chatLoading || !chatInput.trim()}
               >
-                Send
+                {chatLoading ? "Sending…" : "Send"}
               </button>
             </form>
 
             <div className="caption" style={{ marginTop: "10px" }}>
-              Planned behaviour: retrieval from indexed documents, cited
-              answers, and explicit uncertainty.
+              Requests are stateless. Recent conversation text is sent as untrusted context; calculation inputs must be explicit in the current question.
             </div>
           </div>
         )}
@@ -874,12 +914,12 @@ export default function App() {
             {activeTab === "Pipeline" && (
               <div>
                 {[
-                  ["01", "NASA PSI data", "IN PROGRESS"],
-                  ["02", "Extraction + harmonisation", "IN PROGRESS"],
-                  ["03", "Python scientific engine", "PLANNED"],
-                  ["04", "Evidence coverage + uncertainty", "PLANNED"],
-                  ["05", "AI assistant + web dashboard", "PLANNED"],
-                  ["06", "Source-grounded insights", "PLANNED"],
+                  ["01", "NASA PSI source audit", "INCOMPLETE"],
+                  ["02", "Verified harmonised test points", "NOT AVAILABLE"],
+                  ["03", "Atmospheric calculation API", "AVAILABLE"],
+                  ["04", "Evidence coverage + uncertainty", "NOT AVAILABLE"],
+                  ["05", "Assistant + web dashboard", "LOCAL DEMO"],
+                  ["06", "Project evidence retrieval", "NOT AVAILABLE"],
                 ].map(([num, label, status]) => (
                   <div
                     key={num}
@@ -931,10 +971,9 @@ export default function App() {
                 <div>Structured records: not connected</div>
                 <div>NASA source provenance: not connected</div>
                 <div>Vector passage index: not connected</div>
-                <div>Ollama model: not connected</div>
+                <div>Ollama: optional local provider for general answers; connection not monitored</div>
                 <div>
-                  All visible records and chart points in this starter app are
-                  demo fixtures.
+                  Visible records and chart points are illustrative demo fixtures, not experimental observations.
                 </div>
               </div>
             )}

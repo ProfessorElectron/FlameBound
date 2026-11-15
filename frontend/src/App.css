@@ -306,6 +306,27 @@ h3 {
   }
 }
 
+@media (max-width: 640px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    position: static;
+    overflow-y: visible;
+    padding: 20px;
+  }
+
+  .main-area {
+    width: 100%;
+    min-width: 0;
+    padding: 24px 20px 40px;
+  }
+}
+
 /* Alerts (st.info, st.warning, st.error) */
 .alert {
   border-radius: 10px;
@@ -466,6 +487,19 @@ h3 {
 
 .chat-text-input {
   flex: 1;
+}
+
+.calculation-envelope {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 360px;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #0D1422;
+  color: var(--txt);
+  font-size: 0.78rem;
 }
 
 /* Tabs (st.tabs) */

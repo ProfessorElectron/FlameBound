@@ -6,5 +6,10 @@ venv/
 node_modules/
 dist/
 .env
+.env.*
+!.env.example
 .DS_Store
 data/raw/nasa_psi/BASS/experimental_tables/BASS\ Test\ Matrix\ 050213.xlsx
+data/index/*.sqlite3
+data/index/*.sqlite3-shm
+data/index/*.sqlite3-wal

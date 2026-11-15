@@ -1,0 +1,6 @@
+{
+  "status": "pending",
+  "embedding_model": null,
+  "threshold": null,
+  "reason": "No embedding model has been selected or evaluated against retrieval_cases.json. Retrieval must abstain until calibrated."
+}

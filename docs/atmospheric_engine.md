@@ -25,7 +25,7 @@ Factors are applied with IEEE-754 binary64 floating point, without intermediate 
 p_{O_2}=X_{O_2}P
 \]
 
-`X_O2` is the gas-phase oxygen mole fraction in [0,1], `P` is positive total absolute pressure, and `p_O2` is returned in the same pressure unit (legacy function) or kPa (typed calculation). This is Dalton's-law partial pressure; it assumes the supplied fraction represents the appropriate gas-phase mole fraction. A volume-percent value is not automatically accepted as a mole fraction. Under an ideal-gas mixture assumption, volume fraction and mole fraction are numerically equivalent at the same state; the caller must document and verify the basis before using that equivalence. This engine does not calculate non-ideal fugacity.
+`X_O2` is the gas-phase oxygen mole fraction in [0,1], `P` is positive total absolute pressure, and `p_O2` is returned in the same pressure unit (legacy function) or kPa (typed calculation). This is the gas-mixture partial-pressure relation, `p_i = x_i p`, defined in the [IUPAC Gold Book entry for pressure](https://goldbook.iupac.org/terms/view/P04819). It assumes the supplied fraction represents the appropriate gas-phase mole fraction. A volume-percent value is not automatically accepted as a mole fraction. Under an ideal-gas mixture assumption, volume fraction and mole fraction are numerically equivalent at the same state; the caller must document and verify the basis before using that equivalence. This engine does not calculate non-ideal fugacity.
 
 ### Oxygen mass fraction
 
@@ -33,7 +33,7 @@ p_{O_2}=X_{O_2}P
 Y_{O_2}=\frac{X_{O_2}M_{O_2}}{X_{O_2}M_{O_2}+(1-X_{O_2})M_{dil}}
 \]
 
-`M_O2` and `M_dil` are molar masses in g/mol. This equation is limited to a binary O2 plus one-diluent mixture. The diluent name, molar mass, composition status, and provenance must be explicit and verified. There is no default air or nitrogen assumption. It does not model multi-species balance gas unless the user supplies a justified effective mean molar mass and documents that approximation; the current typed interface deliberately represents one named diluent.
+`M_O2` and `M_dil` are molar masses in g/mol. The relationship follows from the IUPAC definitions of [amount fraction](https://goldbook.iupac.org/terms/view/A00296) and [mass fraction](https://goldbook.iupac.org/terms/view/M03722) applied to a binary mixture. This equation is limited to a binary O2 plus one-diluent mixture. The diluent name, molar mass, composition status, and provenance must be explicit and verified. There is no default air or nitrogen assumption. It does not model multi-species balance gas unless the user supplies a justified effective mean molar mass and documents that approximation; the current typed interface deliberately represents one named diluent.
 
 ### Atmospheric comparison
 

@@ -16,6 +16,8 @@ The planned solid-fuel candidates are BASS, BASS-II, and SAFFIRE-I, SAFFIRE-II, 
 
 The raw folders currently contain one experimental-table CSV and one original PSI metadata ZIP for each of PSI-26 (BASS), PSI-25 (BASS-II), PSI-98 (SAFFIRE-I), PSI-99 (SAFFIRE-II), and PSI-100 (SAFFIRE-III). The files were copied unchanged from the local Downloads folder. Their hashes and paths are recorded in `data/metadata/dataset_inventory.csv`; the source pages are recorded in `source_registry.csv`. They are marked `copied_unreviewed` and have not been harmonised into test-point rows.
 
+The registry's `license_or_usage` field currently instructs reviewers to check the investigation page for applicable license and citation. It does not establish redistribution permission. Verify item-specific authorship, citation, license, and any embedded third-party material before publicly packaging a source file. See [third-party notices](../THIRD_PARTY_NOTICES.md) for the file-by-file inventory and unresolved rights status.
+
 ## Local organization
 
 Store downloaded source material under `data/raw/nasa_psi/<INVESTIGATION>/` in the matching subfolder:

@@ -46,7 +46,7 @@ class HealthApiTests(unittest.TestCase):
 class AtmosphericApiTests(unittest.TestCase):
     def test_routes_call_typed_engine_operation_and_do_not_publish_legacy_operations(self) -> None:
         with patch(
-            "backend.app.api.atmosphere.calculate_oxygen_partial_pressure",
+            "backend.app.services.atmospheric_service.engine_calculate_oxygen_partial_pressure",
             wraps=calculate_oxygen_partial_pressure,
         ) as calculation:
             response = client.post("/api/atmosphere/oxygen-partial-pressure", json=atmosphere())
@@ -65,7 +65,7 @@ class AtmosphericApiTests(unittest.TestCase):
         self.assertFalse(any("convert_pressure" in path for path in registered_paths))
 
         with patch(
-            "backend.app.api.atmosphere.compare_atmospheric_conditions",
+            "backend.app.services.atmospheric_service.engine_compare_atmospheric_conditions",
             wraps=compare_atmospheric_conditions,
         ) as comparison:
             result = client.post(
@@ -75,7 +75,7 @@ class AtmosphericApiTests(unittest.TestCase):
         self.assertEqual(result.status_code, 200)
         comparison.assert_called_once()
 
-        with patch("backend.app.api.atmosphere.calculate_oxygen_mass_fraction") as mass_fraction:
+        with patch("backend.app.services.atmospheric_service.engine_calculate_oxygen_mass_fraction") as mass_fraction:
             unavailable = client.post(
                 "/api/atmosphere/oxygen-mass-fraction",
                 json={"oxygen_mole_fraction": 0.21, "diluent_id": "no-record"},
@@ -258,7 +258,7 @@ class AtmosphericApiTests(unittest.TestCase):
         for error in (RuntimeError("secret traceback"), TypeError("internal type bug"), ValueError("internal invariant")):
             with self.subTest(error=type(error).__name__):
                 with patch(
-                    "backend.app.api.atmosphere.calculate_oxygen_partial_pressure",
+                    "backend.app.services.atmospheric_service.engine_calculate_oxygen_partial_pressure",
                     side_effect=error,
                 ):
                     response = safe_client.post(
@@ -272,7 +272,7 @@ class AtmosphericApiTests(unittest.TestCase):
     def test_nonfinite_response_serialization_becomes_generic_500(self) -> None:
         safe_client = TestClient(app, raise_server_exceptions=False)
         with patch(
-            "backend.app.api.atmosphere.calculate_oxygen_partial_pressure",
+            "backend.app.services.atmospheric_service.engine_calculate_oxygen_partial_pressure",
             return_value=SimpleNamespace(
                 to_dict=lambda: {"status": "success", "outputs": {"value": math.nan}}
             ),

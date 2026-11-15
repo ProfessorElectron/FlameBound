@@ -8,11 +8,11 @@ FlameBound is a research workspace for organizing NASA's BASS, BASS-II, and SAFF
 
 The current usable scientific engine calculates oxygen partial pressure and compares two atmospheric conditions. Its equation is `p(O₂) = X(O₂) × P`; pressure must be absolute, units are converted deterministically, and API inputs are marked user-supplied and unverified. It does not predict ignition or flame spread. The mass-fraction operation remains unavailable without a reviewed diluent record. The development working tree contains PSI source files, but redistribution rights remain unresolved and the public-release candidate excludes them. No reviewed harmonised test-point rows are available. Dashboard records and visualizations are illustrative fixtures, not NASA statistics.
 
-The React assistant calls the FastAPI `/api/assistant/chat` endpoint. Explicit atmospheric calculation requests are parsed and executed by the deterministic server-side calculation service; the LLM does not supply or rewrite calculation inputs or results. Ollama generation is used only for non-calculation responses. Project evidence retrieval is currently unavailable: there are no approved ingested documents or calibrated retrieval configuration, so the assistant abstains on project-evidence questions and does not claim general model knowledge as retrieved evidence. Do not interpret this prototype as a validated lunar flame-spread model.
+The React assistant calls the FastAPI `/api/assistant/chat` endpoint. Explicit atmospheric calculation requests are parsed and executed by the deterministic server-side calculation service; the LLM does not supply or rewrite calculation inputs or results. Ollama handles general natural-language answers. A local lexical retriever reads inventory-hash-matched PSI files and provides source passages to the assistant. Searchable passages and their citations are marked **unreviewed**; this is not a scientifically reviewed evidence synthesis. The current inventory has 54 PSI entries; 37 sources produced searchable text, 16 image-only or otherwise non-text PDFs were skipped, and the workbook flagged as sensitive/local-only is excluded. The public preclearance candidate excludes PSI files and the generated local index, so retrieval is available only in the full local development tree. Do not interpret this prototype as a validated lunar flame-spread model.
 
-**Technology stack:** Python, FastAPI, and Pydantic for the API and calculation boundary; React 19 and Vite for the browser interface; Ollama as an optional local language-model provider for non-calculation questions. SQLite and embedding support exist as retrieval infrastructure, but project retrieval is not operational.
+**Technology stack:** Python, FastAPI, and Pydantic for the API and calculation boundary; React 19 and Vite for the browser interface; Ollama for general-language responses; and a hash-verified, local lexical index for text-extractable PSI sources. No embedding model is required. The local index is generated under ignored `data/index/` on the first retrieval request and must not be redistributed.
 
-See `docs/atmospheric_engine.md`, `docs/mathematical_framework.md`, `docs/phase4/fastapi_scientific_interface.md`, and `docs/phase5/` for scientific contracts and historical implementation reviews. The locked startup guide and API walkthrough are in [the demo script](docs/submission/demo_script.md) and [AI setup guide](docs/phase5/ai_setup.md). The Phase 5 handover and audit documents are historical snapshots; see [the Phase 5 index](docs/phase5/README.md).
+See `docs/atmospheric_engine.md`, `docs/mathematical_framework.md`, `docs/phase4/fastapi_scientific_interface.md`, and `docs/phase5/` for scientific contracts and historical implementation reviews. The locked startup guide and API walkthrough are in [the demo script](docs/submission/demo_script.md) and [local AI retrieval guide](docs/local_ai_retrieval.md). The Phase 5 handover and audit documents are historical snapshots; see [the Phase 5 index](docs/phase5/README.md).
 
 Before publicly distributing the project, review [third-party notices and source provenance](THIRD_PARTY_NOTICES.md). PSI document redistribution terms and authorization for all project contributors have not yet been confirmed.
 
@@ -26,7 +26,7 @@ uv sync --locked
 uv run --locked python -m unittest discover -s tests -v
 ```
 
-`uv.lock` fixes the Python runtime dependency graph for Python `>=3.10`. The core install contains the API/runtime dependencies. Install optional groups only when needed: `uv sync --locked --extra ai` adds PDF ingestion support, `--extra audit` adds the PSI audit script's XLSX reader, and `--extra dev` adds pytest. The normal suite uses standard-library `unittest`. `python -m pip install -r requirements.txt` remains available as an unlocked pip alternative.
+`uv.lock` fixes the Python runtime dependency graph for Python `>=3.10`. The core install includes the API and PDF text extraction dependency required for local retrieval. `--extra audit` adds the PSI audit script's XLSX reader, and `--extra dev` adds pytest. The normal suite uses standard-library `unittest`. `python -m pip install -r requirements.txt` remains available as an unlocked pip alternative.
 
 Run the API with `uv run --locked python -m uvicorn backend.app.main:app --reload` after syncing. The API is available at `http://127.0.0.1:8000`; health is at `/api/health` and interactive OpenAPI docs are at `/docs`.
 
@@ -47,10 +47,10 @@ Vite proxies `/api` calls to `http://127.0.0.1:8000` during local development. S
 1. Start the API and Vite frontend using the commands above.
 2. Open **Scenario Analysis**, enter oxygen fraction `0.21` and absolute pressure `101.325 kPa`, then calculate. The displayed result and expandable calculation envelope come from the backend.
 3. Open **AI Assistant** and ask: “Calculate oxygen partial pressure for 21% oxygen at 101.325 kPa absolute.” The response should include the deterministic result and calculation details.
-4. Ask: “What experimental evidence exists for flame spread in reduced gravity?” The assistant should report that project evidence retrieval is unavailable, without fabricating citations.
+4. Ask: “What experiment identifiers are listed in the PSI-26 BASS experimental table?” The assistant should answer from retrieved table rows and show citations marked unreviewed.
 5. Ask it to predict lunar flame spread; it should decline because no validated predictive model is available.
 
-General AI answers require Ollama installed and running at `http://localhost:11434`, with the configured generation model available. The default model is `qwen3:4b`; on a fresh Ollama installation, fetch it with `ollama pull qwen3:4b` and start Ollama (for example, `ollama serve` if it is not already running). Override the endpoint or model with `FLAMEBOUND_OLLAMA_BASE_URL` and `FLAMEBOUND_OLLAMA_GENERATION_MODEL`. Deterministic calculations, unsupported-request handling, and evidence abstention do not require Ollama.
+General AI answers and natural-language summaries of retrieved PSI passages require Ollama at `http://localhost:11434`, with the configured generation model available. The default model is `qwen3:4b`; on a fresh Ollama installation, fetch it with `ollama pull qwen3:4b` and start Ollama (for example, `ollama serve` if it is not already running). Override the endpoint or model with `FLAMEBOUND_OLLAMA_BASE_URL` and `FLAMEBOUND_OLLAMA_GENERATION_MODEL`. Deterministic calculations, greetings, capability guidance, and common oxygen partial-pressure definitions do not require Ollama.
 
 For a complete staged walkthrough, including comparison, clarification, and fallback cases, see [the reproducible demo script](docs/submission/demo_script.md). Submission preparation is tracked in [the checklist](docs/submission/submission_checklist.md); runtime and packaging details are in [the release manifest](docs/submission/release_manifest.md).
 
@@ -62,9 +62,9 @@ For a complete staged walkthrough, including comparison, clarification, and fall
 - `data/template/`: blank test-point CSV template.
 - `docs/`: mathematical framework, data dictionary, source notes, and limitations.
 - `modelling/`: deterministic scientific calculations and analysis modules.
-- `backend/`: FastAPI atmospheric calculation and assistant endpoints; project evidence and experiment query routes remain unavailable.
+- `backend/`: FastAPI atmospheric calculation and assistant endpoints; project evidence lookup runs through the assistant route.
 - `frontend/`: React/Vite dashboard and local API integration; evidence views use clearly labeled demo fixtures.
-- `ai/`: Ollama provider and retrieval infrastructure; project retrieval is disabled pending document approval and model calibration.
+- `ai/`: Ollama provider, hash-verified local PSI corpus reader, calibrated lexical retrieval, and optional semantic-retrieval infrastructure.
 - `notebooks/`: exploratory analysis only; reusable calculations belong in `modelling/`.
 - `results/`: generated figures, reports, and model evaluations.
 - `tests/`: Python tests for the modelling code.

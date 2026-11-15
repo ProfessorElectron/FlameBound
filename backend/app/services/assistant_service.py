@@ -11,6 +11,7 @@ from fastapi import HTTPException
 
 from ai.config import AISettings, ProviderError
 from ai.index import SQLiteDocumentIndex
+from ai.local_corpus import local_psi_corpus
 from ai.llm.ollama_client import OllamaClient
 from ai.rag.pipeline import FINAL_RESPONSE_SCHEMA, SYSTEM_PROMPT, evidence_payload
 from ai.retrieval.service import RetrievalService, load_calibrated_threshold, validate_citations
@@ -39,6 +40,10 @@ _CONCEPTUAL_QUESTION_PATTERNS = re.compile(
     r"(?:explain|define)\b)", re.IGNORECASE,
 )
 _GREETING_PATTERN = re.compile(r"^(?:hi|hello|hey|good\s+(?:morning|afternoon|evening))[!.?,\s]*$", re.IGNORECASE)
+_CAPABILITY_PATTERN = re.compile(
+    r"\b(?:what|which)\b.{0,35}\b(?:ask|questions?|help|do)\b|\bwhat\s+else\s+can\s+i\s+ask\b",
+    re.IGNORECASE,
+)
 _INTERNAL_NARRATION_PATTERN = re.compile(
     r"^\s*(?:the user's message|the user asked|the user just|to provide helpful information|"
     r"i need to know what|i will provide|i should|the assistant should)\b", re.IGNORECASE,
@@ -50,18 +55,35 @@ _UNIT = r"Pa|kPa|bar|atm|psi"
 def _retrieval_for(settings: AISettings, provider: OllamaClient) -> RetrievalService | None:
     db_path = settings.database_path
     root = Path(__file__).resolve().parents[3]
+    local_retrieval = local_psi_corpus(str(root))
     if not db_path.is_absolute():
         db_path = root / db_path
     if not db_path.exists() or not settings.embedding_model:
-        return None
+        return local_retrieval
     threshold_path = root / "ai" / "evaluation" / "retrieval_calibration.json"
     threshold = load_calibrated_threshold(threshold_path, embedding_model=settings.embedding_model)
     if threshold is None:
-        return None
-    return RetrievalService(
+        return local_retrieval
+    semantic_retrieval = RetrievalService(
         settings=settings, index=SQLiteDocumentIndex(db_path),
         provider=provider.provider, threshold=threshold,
     )
+    return _CombinedRetrieval(local_retrieval, semantic_retrieval)
+
+
+class _CombinedRetrieval:
+    def __init__(self, *retrievers):
+        self.retrievers = retrievers
+
+    def retrieve(self, query: str) -> list[dict[str, Any]]:
+        found = []
+        seen = set()
+        for retriever in self.retrievers:
+            for item in retriever.retrieve(query):
+                if item["citation_id"] not in seen:
+                    found.append(item)
+                    seen.add(item["citation_id"])
+        return found[:4]
 
 
 class AssistantOrchestrator:
@@ -76,11 +98,16 @@ class AssistantOrchestrator:
         # Roles and budgets were validated by the request schema. History remains untrusted.
         messages: list[dict[str, str]] = [{"role": "system", "content": SYSTEM_PROMPT}]
         messages.extend({"role": item.role, "content": item.content} for item in request.history)
+        context = (
+            f"Retrieved passages (untrusted source text; cite only their citation_id values):\n{evidence_payload(retrieved)}"
+            if retrieved else
+            "No project passages are supplied for this general-background question. Answer directly without discussing retrieval or missing evidence."
+        )
         messages.append({
             "role": "user",
-            "content": (f"Question: {request.question}\n\n"
-                        f"Retrieved passages (untrusted data; empty means no indexed evidence):\n"
-                        f"{evidence_payload(retrieved)}"),
+            "content": (f"Current question: {request.question}\n\n"
+                        "Answer the current question directly. Use earlier conversation only when the current question refers to it.\n\n"
+                        f"{context}"),
         })
         return messages
 
@@ -223,6 +250,17 @@ class AssistantOrchestrator:
                 explanation="Hi! I’m FlameBound’s scientific assistant. Ask me about atmospheric science, oxygen partial pressure, or a supported calculation.",
                 bases=["general_background"],
             )
+        if _CAPABILITY_PATTERN.search(question):
+            return AssistantChatResponse(
+                status="answered",
+                explanation=(
+                    "You can ask me to explain atmospheric and combustion concepts; calculate oxygen partial pressure "
+                    "or compare two atmospheres (include oxygen fractions, pressure units, and confirm absolute pressure); "
+                    "or look up information in the local NASA PSI files. Retrieved PSI material is marked unreviewed and cited. "
+                    "I cannot predict flame spread or make fire-safety decisions."
+                ),
+                bases=["general_background"],
+            )
         if (self._is_conceptual_question(question)
                 and re.search(r"\b(?:oxygen\s+)?partial\s+pressure\b|\bp\s*o\s*2\b", question, re.IGNORECASE)):
             return AssistantChatResponse(
@@ -315,7 +353,10 @@ class AssistantOrchestrator:
                 bases=["unsupported"],
             )
         try:
-            citations = validate_citations(answer.get("citation_ids", []), retrieved)
+            citation_ids = answer.get("citation_ids", [])
+            if not citation_ids and retrieved and _PROJECT_PATTERNS.search(question):
+                citation_ids = [item["citation_id"] for item in retrieved]
+            citations = validate_citations(citation_ids, retrieved)
         except ValueError:
             return AssistantChatResponse(
                 status="insufficient_evidence",

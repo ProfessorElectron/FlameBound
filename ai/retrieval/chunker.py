@@ -34,6 +34,8 @@ def chunk_documents(documents: list[dict[str, Any]], *, source_id: str,
                     "end_char": end,
                     "text": piece,
                 })
+                if isinstance(document.get("location_label"), str):
+                    chunks[-1]["location_label"] = document["location_label"]
                 if len(chunks) > max_chunks:
                     raise ValueError("Document exceeds the configured chunk limit")
             if end == len(text):

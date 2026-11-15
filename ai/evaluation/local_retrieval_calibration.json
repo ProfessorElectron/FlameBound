@@ -1,0 +1,19 @@
+{
+  "dataset_version": "1.0",
+  "status": "calibrated",
+  "retrieval_method": "IDF-weighted query-term coverage over verified local file chunks",
+  "threshold": 0.1362859442286238,
+  "method": "Midpoint between the highest negative-case score and lowest positive expected-source score; zero false positives on labeled cases.",
+  "positive_cases": 4,
+  "negative_cases": 4,
+  "indexed_sources": 37,
+  "expected_source_ranked_first": false,
+  "expected_source_top4_recall": 1.0,
+  "reason": "",
+  "ranking_note": "A known expected source may not be the only top result; retrieved passages remain unreviewed and must not be treated as verified evidence.",
+  "limitations": "Provisional source-level labels. Threshold reports zero false positives only on the labeled unrelated/absent queries; the dataset is small and does not guarantee relevance for every query.",
+  "positive_recall": 1.0,
+  "false_positive_rate": 0.0,
+  "max_negative_score": 0.07665885616229695,
+  "min_positive_score": 0.19591303229495066
+}

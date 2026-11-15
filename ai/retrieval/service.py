@@ -42,6 +42,7 @@ class RetrievalService:
             {
                 "citation_id": item["chunk_id"], "text": item["text"],
                 "similarity": item["similarity"], "page": item["page_number"],
+                "location_label": f"page {item['page_number']}",
                 "source_id": item["source_id"], "title": item["title"],
                 "source_uri": item["uri"], "review_status": item["review_status"],
                 "content_hash": item["content_hash"], "publication_date": item["publication_date"],
@@ -62,6 +63,6 @@ def validate_citations(candidate_ids: list[str], retrieved: list[dict[str, Any]]
         citations.append({key: item[key] for key in (
             "citation_id", "source_id", "title", "source_uri", "page",
             "content_hash", "review_status",
-            "publication_date", "document_type",
+            "publication_date", "document_type", "location_label",
         )})
     return citations

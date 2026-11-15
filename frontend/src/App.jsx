@@ -413,7 +413,7 @@ export default function App() {
         <div className="caption">● UI running</div>
         <div className="caption">○ NASA data connection — not connected</div>
         <div className="caption">Atmospheric engine: backend API (requires local backend)</div>
-        <div className="caption">Assistant API: backend endpoint · project evidence retrieval unavailable</div>
+        <div className="caption">Assistant API: local Ollama + PSI source lookup</div>
         <div className="caption">Data version: DEMO-0.1</div>
       </aside>
 
@@ -790,7 +790,7 @@ export default function App() {
               scenario={scenario}
             />
             <div className="alert alert-warning">
-              Atmospheric calculations run deterministically on the backend. Project evidence retrieval is currently unavailable; no project citations will be supplied.
+              Atmospheric calculations run deterministically on the backend. PSI passages are retrieved from local, hash-checked files; citations are unreviewed. Image-only scans and the sensitive local-only workbook are excluded from search.
             </div>
 
             <div className="chat-history">
@@ -803,7 +803,7 @@ export default function App() {
                     {item.msg}
                     {item.status && <div className="caption">Status: {item.status}{item.bases?.length ? ` · Basis: ${item.bases.join(", ")}` : ""}</div>}
                     {item.calculation && <details><summary>Calculation details</summary><pre className="calculation-envelope">{JSON.stringify(item.calculation, null, 2)}</pre></details>}
-                    {item.citations?.length > 0 && <ul>{item.citations.map((citation) => <li key={citation.citation_id}>{citation.title}, p. {citation.page} ({citation.review_status})</li>)}</ul>}
+                    {item.citations?.length > 0 && <ul>{item.citations.map((citation) => <li key={citation.citation_id}>{citation.title}, {citation.location_label || `p. ${citation.page}`} ({citation.review_status})</li>)}</ul>}
                   </div>
                 </div>
               ))}
@@ -919,7 +919,7 @@ export default function App() {
                   ["03", "Atmospheric calculation API", "AVAILABLE"],
                   ["04", "Evidence coverage + uncertainty", "NOT AVAILABLE"],
                   ["05", "Assistant + web dashboard", "LOCAL DEMO"],
-                  ["06", "Project evidence retrieval", "NOT AVAILABLE"],
+                  ["06", "Local PSI passage search", "UNREVIEWED"],
                 ].map(([num, label, status]) => (
                   <div
                     key={num}

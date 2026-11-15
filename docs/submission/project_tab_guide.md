@@ -16,9 +16,9 @@ Sources: [2026 event page](https://www.spaceappschallenge.org/2026/), [Flame in 
 
 1. Sign in to the Space Apps site, open your team's page, and select **Project Tab**. Use the required fields actually shown there. The public global page confirms the Project Tab workflow but does not expose a definitive current field-by-field schema, word limits, or attachment limits. Do not infer mandatory fields from old-year guides.
 2. Select the Flame in Freefall challenge if the form requests a challenge selection.
-3. Describe the problem and project accurately: FlameBound is an engineering prototype for organizing combustion research and demonstrating deterministic atmospheric calculations. It does not contain reviewed harmonised PSI test points, operational evidence retrieval, or a validated flame-spread/ignition predictor.
+3. Describe the problem and project accurately: FlameBound is an engineering prototype for organizing combustion research, searching text-extractable local PSI files, and demonstrating deterministic atmospheric calculations. It does not contain reviewed harmonised PSI test points or a validated flame-spread/ignition predictor.
 4. Describe what is implemented: the React frontend calls FastAPI; deterministic calculations compute oxygen partial pressure and compare atmospheric conditions from explicit absolute-pressure inputs. Clearly label dashboard fixtures as illustrative, not NASA statistics.
-5. Explain the AI boundary truthfully: atmospheric values are parsed/validated and calculated by deterministic backend code; Ollama is optional for general background text. Do not claim live tool-calling reliability, active PSI evidence retrieval, or model-generated scientific predictions.
+5. Explain the AI boundary truthfully: atmospheric values are parsed/validated and calculated by deterministic backend code; Ollama generates general answers and natural-language summaries of locally retrieved source passages. PSI retrieval is lexical, limited to text-extractable files, and every citation is marked unreviewed. Do not claim live tool-calling reliability, reviewed evidence, or model-generated scientific predictions.
 6. Cite sources used and provide applicable third-party license documentation. Review `THIRD_PARTY_NOTICES.md`; PSI source-file redistribution and contributor authorization remain unresolved. Do not upload raw PSI documents or derived exports unless rights are established.
 7. Provide repository, hosted-demo, screenshots, video, slides, or other links only when the form asks for them or the registered local event requires them. Test each shared URL in a signed-out/private browser window. Do not claim a local demonstration is hosted.
 8. Review team membership and any license/rights attestations. A team member must personally accept statements they can truthfully make; this guide cannot confirm contributor consent or source rights.
@@ -32,7 +32,7 @@ Before pasting into the form, ensure the description answers the requested quest
 - What the current prototype does and how a judge can try it.
 - What data and sources were actually used, with citations and license notices.
 - Which values are deterministic calculations versus illustrative fixtures or model-generated background.
-- What remains unavailable: reviewed PSI harmonised records, project evidence retrieval, and validated fire-spread prediction.
+- What remains unavailable: reviewed PSI harmonised records and validated fire-spread prediction. The preclearance candidate excludes PSI sources and its local index; it cannot demonstrate source lookup unless cleared PSI files are supplied separately.
 - How to run the application if no public demo is available.
 - Contributor and third-party material disclosures required by the form/terms.
 

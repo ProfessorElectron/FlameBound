@@ -76,7 +76,7 @@ Uncommitted/untracked work has no Git author metadata. Identify each author befo
 
 ## Python dependency reproducibility and notices
 
-`pyproject.toml` declares Python `>=3.10`. Core runtime dependencies are FastAPI, HTTPX, Pydantic, and Uvicorn. Optional groups add `openpyxl` for the PSI audit script, `pypdf` for PDF ingestion, and pytest for optional test-running convenience. Source import inspection found no current Python imports of NumPy, SciPy, pandas, Plotly, or Matplotlib, so those packages were removed from install groups. `requirements.txt` remains an unlocked pip alternative; `uv.lock` pins runtime and optional package resolution. The build-system versions are pinned in `pyproject.toml` but are outside the application dependency lock graph.
+`pyproject.toml` declares Python `>=3.10`. Core runtime dependencies are FastAPI, HTTPX, Pydantic, pypdf, and Uvicorn. Optional groups add `openpyxl` for the PSI audit script and pytest for optional test-running convenience. Source import inspection found no current Python imports of NumPy, SciPy, pandas, Plotly, or Matplotlib, so those packages were removed from install groups. `requirements.txt` remains an unlocked pip alternative; `uv.lock` pins runtime and optional package resolution. The build-system versions are pinned in `pyproject.toml` but are outside the application dependency lock graph.
 
 The lock was generated with uv 0.13.8, resolving 37 unique dependency name/version pairs (38 package entries including the project and Python/platform marker variants). A clean Python 3.13.0 environment installed core runtime plus the `dev` extra and passed the full unittest discovery run. Only Python 3.13 on Windows was executed; the lock declares support for Python `>=3.10` but that does not replace CI testing on other supported versions/platforms.
 
@@ -84,7 +84,7 @@ Exact package versions and PyPI license metadata are recorded in [`python_depend
 
 ### Minimal reproducibility recommendation
 
-Use `uv sync --locked` for the reproducible core install; add `--extra ai`, `--extra audit`, or `--extra dev` only when that functionality is needed. The `all` extra is a convenience aggregate of the optional groups. The alternative `pip install -r requirements.txt` still resolves against lower bounds and is not reproducible. The project build backend is pinned to the versions recorded in `pyproject.toml`; the uv lock does not independently lock build isolation tooling. Additional Python/platform matrix tests remain recommended before a wider software release.
+Use `uv sync --locked` for the reproducible core install; add `--extra audit` or `--extra dev` only when that functionality is needed. The `all` extra is a convenience aggregate of the optional groups. The alternative `pip install -r requirements.txt` still resolves against lower bounds and is not reproducible. The project build backend is pinned to the versions recorded in `pyproject.toml`; the uv lock does not independently lock build isolation tooling. Additional Python/platform matrix tests remain recommended before a wider software release.
 
 ## Release manifest
 
@@ -143,7 +143,7 @@ npm ci
 npm run dev
 ```
 
-Install the optional PDF ingestion dependency with `uv sync --locked --extra ai`, the XLSX audit dependency with `--extra audit`, and pytest with `--extra dev`. Optional local AI operation may require Ollama and a configured model; it is not required for deterministic atmospheric calculations. Do not claim operational project evidence retrieval or validated fire-spread prediction. Verify current app configuration and README instructions against the chosen release snapshot before publishing.
+The core install includes pypdf for local text extraction; add `--extra audit` for the XLSX audit script and `--extra dev` for pytest. The full local development tree supports limited lexical lookup over hash-verified PSI files, but citations remain unreviewed. The public preclearance candidate omits PSI sources and the generated local index, so it cannot demonstrate project-file retrieval without separately cleared data. Do not claim reviewed evidence retrieval or validated fire-spread prediction. Verify current app configuration and README instructions against the chosen release snapshot before publishing.
 
 ## Final public-release checklist
 

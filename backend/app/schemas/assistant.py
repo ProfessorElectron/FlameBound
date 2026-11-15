@@ -38,6 +38,7 @@ class AssistantCitation(BaseModel):
     title: str
     source_uri: str
     page: int
+    location_label: str | None = None
     content_hash: str
     review_status: Literal["unreviewed", "reviewed"]
     publication_date: str

@@ -1,0 +1,80 @@
+Metadata-Version: 2.4
+Name: flamebound-research
+Version: 0.1.0
+Summary: Evidence-tracked analysis of NASA solid-fuel combustion experiments
+License: MIT License
+        
+        Copyright (c) 2026 Arkaprava Bishnu
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Provides-Extra: all
+Requires-Dist: fastapi>=0.110; extra == "all"
+Requires-Dist: matplotlib>=3.8; extra == "all"
+Requires-Dist: httpx>=0.27; extra == "all"
+Requires-Dist: numpy>=1.26; extra == "all"
+Requires-Dist: pypdf>=5.0; extra == "all"
+Requires-Dist: pandas>=2.1; extra == "all"
+Requires-Dist: plotly>=5.18; extra == "all"
+Requires-Dist: pydantic>=2.6; extra == "all"
+Requires-Dist: pytest>=8.0; extra == "all"
+Requires-Dist: scipy>=1.12; extra == "all"
+Requires-Dist: uvicorn[standard]>=0.27; extra == "all"
+Dynamic: license-file
+
+# FlameBound
+
+FlameBound is a research project for organizing and analysing NASA solid-fuel combustion investigations, including BASS, BASS-II, and SAFFIRE. It aims to compare documented test conditions, map where evidence exists, and make the limits of any analysis visible. It is not a material certification or habitat safety assessment.
+
+## Project status
+
+The repository contains the mathematical framework, atmospheric calculation functions, a proposed data schema, and raw experimental tables plus PSI metadata archives for BASS, BASS-II, and SAFFIRE-I/II/III. Those sources have not yet been audited or harmonised. Coverage analysis, statistical models, the API, the frontend, and AI retrieval are still scaffolds or future work.
+
+## Setup
+
+Use Python 3.10 or newer and Node.js 20.19+ or 22.12+ for the optional frontend.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python -m unittest discover -s tests -v
+```
+
+The frontend scaffold is in `frontend/`; run `npm install` and `npm run dev` from that directory when working on it.
+
+## Repository map
+
+- `data/raw/nasa_psi/`: source files, arranged by investigation and source type.
+- `data/processed/`: harmonised, cleaned, and derived datasets.
+- `data/metadata/`: dataset inventory, source registry, and processing log templates.
+- `data/template/`: blank test-point CSV template.
+- `docs/`: mathematical framework, data dictionary, source notes, and limitations.
+- `modelling/`: deterministic scientific calculations and analysis modules.
+- `backend/`: API scaffold for serving modelling and evidence results.
+- `frontend/`: React/Vite interface scaffold.
+- `ai/`: future document ingestion, retrieval, prompts, and evaluation.
+- `notebooks/`: exploratory analysis only; reusable calculations belong in `modelling/`.
+- `results/`: generated figures, reports, and model evaluations.
+- `tests/`: Python tests for the modelling code.
+
+See [the mathematical framework](docs/mathematical_framework.md) and [the data dictionary](docs/data_dictionary.md) before adding or interpreting experimental rows.

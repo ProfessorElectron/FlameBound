@@ -34,6 +34,15 @@ _CALCULATION_PATTERNS = re.compile(
     r"\b(p\s*o\s*2|partial pressure|compare.{0,40}(atmosphere|condition)|"
     r"atmosphere.{0,30}compare)\b", re.IGNORECASE,
 )
+_CONCEPTUAL_QUESTION_PATTERNS = re.compile(
+    r"\b(?:what\s+does\b.{0,120}\bmean\b|what\s+is\b.{0,100}\b(?:oxygen\s+)?partial\s+pressure\b|"
+    r"(?:explain|define)\b)", re.IGNORECASE,
+)
+_GREETING_PATTERN = re.compile(r"^(?:hi|hello|hey|good\s+(?:morning|afternoon|evening))[!.?,\s]*$", re.IGNORECASE)
+_INTERNAL_NARRATION_PATTERN = re.compile(
+    r"^\s*(?:the user's message|the user asked|the user just|to provide helpful information|"
+    r"i need to know what|i will provide|i should|the assistant should)\b", re.IGNORECASE,
+)
 _NUMBER = r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?"
 _UNIT = r"Pa|kPa|bar|atm|psi"
 
@@ -208,6 +217,23 @@ class AssistantOrchestrator:
         if sum(len(message.content) for message in request.history) > self.settings.max_history_chars:
             raise HTTPException(status_code=422, detail={"code": "request_limit_exceeded", "field": "history",
                                                          "message": "Conversation history exceeds the configured total size."})
+        if _GREETING_PATTERN.fullmatch(question):
+            return AssistantChatResponse(
+                status="answered",
+                explanation="Hi! I’m FlameBound’s scientific assistant. Ask me about atmospheric science, oxygen partial pressure, or a supported calculation.",
+                bases=["general_background"],
+            )
+        if (self._is_conceptual_question(question)
+                and re.search(r"\b(?:oxygen\s+)?partial\s+pressure\b|\bp\s*o\s*2\b", question, re.IGNORECASE)):
+            return AssistantChatResponse(
+                status="answered",
+                explanation=(
+                    "Oxygen partial pressure is the part of a gas mixture’s total pressure contributed by oxygen. "
+                    "It depends on both the oxygen fraction and the total absolute pressure (pO₂ = oxygen mole fraction × total pressure). "
+                    "It describes the oxygen present in the gas; by itself, it does not predict ignition or flame spread."
+                ),
+                bases=["general_background"],
+            )
         if _UNSUPPORTED_PATTERNS.search(question):
             return AssistantChatResponse(
                 status="unsupported", explanation="I cannot assess fire safety, certify conditions, or predict ignition or spread. FlameBound does not provide operational safety decisions.",
@@ -220,7 +246,8 @@ class AssistantOrchestrator:
                 bases=["unsupported"],
             )
 
-        calculation_tool = self._calculation_tool_for_question(question)
+        conceptual_question = self._is_conceptual_question(question)
+        calculation_tool = None if conceptual_question else self._calculation_tool_for_question(question)
         if calculation_tool is not None:
             expected_arguments = self._parse_explicit_calculation(calculation_tool, question)
             if expected_arguments is None:
@@ -253,7 +280,7 @@ class AssistantOrchestrator:
             )
 
         retrieved = self.retrieval.retrieve(question) if self.retrieval else []
-        if _CALCULATION_PATTERNS.search(question):
+        if _CALCULATION_PATTERNS.search(question) and not conceptual_question:
             return AssistantChatResponse(
                 status="clarification", explanation="Please provide explicit numeric values, units, scenario labels, and absolute pressure basis for the requested calculation.",
                 bases=["general_background"],
@@ -271,6 +298,12 @@ class AssistantOrchestrator:
         messages = self._messages(request, retrieved)
         final_message = self.provider.chat(messages, response_format=FINAL_RESPONSE_SCHEMA)
         answer = self._parse_final(final_message)
+        if _INTERNAL_NARRATION_PATTERN.search(answer["explanation"]):
+            return AssistantChatResponse(
+                status="clarification",
+                explanation="I couldn’t produce a clear direct answer. Please rephrase your question, and I’ll try again.",
+                bases=["general_background"],
+            )
         if answer["status"] == "unsupported":
             return AssistantChatResponse(status="unsupported", explanation=answer["explanation"], bases=["unsupported"])
         if answer["status"] == "clarification":
@@ -299,6 +332,15 @@ class AssistantOrchestrator:
             status="answered", explanation=answer["explanation"], bases=bases,
             citations=citations,
         )
+
+    @staticmethod
+    def _is_conceptual_question(question: str) -> bool:
+        """Keep explanations and definitions out of the deterministic calculation path."""
+        if not _CONCEPTUAL_QUESTION_PATTERNS.search(question):
+            return False
+        # An explicit calculation command still takes precedence when a user asks
+        # for both a result and an explanation in one message.
+        return not re.search(r"\b(?:calculate|compute|work\s+out)\b", question, re.IGNORECASE)
 
     @staticmethod
     def _calculation_tool_for_question(question: str) -> str | None:
